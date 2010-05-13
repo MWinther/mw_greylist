@@ -1,3 +1,4 @@
+from mw_greylist.exceptions import *
 import psycopg2
 import rbl
 import socket
@@ -6,21 +7,6 @@ import sys
 from syslog import *
 import string 
 from random import Random
-
-class GLException(Exception):
-	"Used to indicate Greylist Candidate errors."
-
-class GLEndOfFunctionException(GLException):
-	"Used to indicate end of function without catching circumstances."
-
-class GLHeaderException(GLException):
-	"Used to indicate incorrectly formatted header line."
-
-class GLNoDBConnectionException(GLException):
-	"Used to indicate inability to communicate with database."
-
-class GLIncompleteHeaderException(GLException):
-	"Used to indicate incomplete information in headers."
 
 class GLCandidate(object):
 

@@ -1,5 +1,5 @@
 import unittest
-import mwgl2
+import mw_greylist as mwgl2
 
 class MWGL2Test(unittest.TestCase):
 

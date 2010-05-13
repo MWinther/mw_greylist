@@ -1,4 +1,4 @@
-from mw_greylist.exceptions import *
+from core.exceptions import *
 import psycopg2
 import rbl
 import socket

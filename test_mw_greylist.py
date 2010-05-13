@@ -1,14 +1,14 @@
 import unittest
-import mw_greylist as mwgl2
+import mw_greylist
 
-class MWGL2Test(unittest.TestCase):
+class mw_greylistTest(unittest.TestCase):
 
 	def setUp(self):
-		self.glc = mwgl2.GLCandidate()
+		self.glc = mw_greylist.GLCandidate()
 
 	def testReadConfigFromNonExistingFile(self):
 		self.failUnlessRaises(IOError,
-							  mwgl2.GLCandidate,
+							  mw_greylist.GLCandidate,
 							  "foo")
 
 	def testSortDbConfigIntoDict(self):
@@ -24,7 +24,7 @@ class MWGL2Test(unittest.TestCase):
 						 self.glc.headers['client_address'])
 
 	def testInvalidHeaderLine(self):
-		self.failUnlessRaises(mwgl2.GLHeaderException, 
+		self.failUnlessRaises(mw_greylist.GLHeaderException, 
 							  self.glc._split_headers, 
 							  'foo')
 
@@ -78,11 +78,11 @@ class MWGL2Test(unittest.TestCase):
 						 self.glc.test_spf())
 
 	def testHandleEmptyConnStr(self):
-		self.glc = mwgl2.GLCandidate(conf_file="")
+		self.glc = mw_greylist.GLCandidate(conf_file="")
 		self.assertEqual("", self.glc._conn_str())
 
 	def testConnStrCreatedCorrectly(self):
-		self.glc = mwgl2.GLCandidate(conf_file="")
+		self.glc = mw_greylist.GLCandidate(conf_file="")
 		self.glc.db_params['dbname'] = 'greylist'
 		self.glc.db_params['dbuser'] = 'postfix'
 		self.assertEqual("dbname='greylist' dbuser='postfix' ",

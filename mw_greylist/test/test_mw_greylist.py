@@ -1,14 +1,21 @@
+from mw_greylist.glcandidate import GLCandidate
+from mw_greylist.exceptions import *
+import os.path
+import sys
 import unittest
-import mw_greylist
+#import mw_greylist.core.exceptions
 
 class mw_greylistTest(unittest.TestCase):
 
 	def setUp(self):
-		self.glc = mw_greylist.GLCandidate()
+		self.glc = GLCandidate()
+		script_path = sys.argv[0]
+		script_path = os.path.split(script_path)[0]
+		self.header_file = script_path + "/header_file.txt"
 
 	def testReadConfigFromNonExistingFile(self):
 		self.failUnlessRaises(IOError,
-							  mw_greylist.GLCandidate,
+							  GLCandidate,
 							  "foo")
 
 	def testSortDbConfigIntoDict(self):
@@ -19,12 +26,12 @@ class mw_greylistTest(unittest.TestCase):
 		self.assertEqual('foo', self.glc.db_type)
 
 	def testReadHeadersFromExistingFile(self):
-		self.glc.read_headers("test/header_file.txt")
+		self.glc.read_headers(self.header_file)
 		self.assertEqual('1.2.3.4',
 						 self.glc.headers['client_address'])
 
 	def testInvalidHeaderLine(self):
-		self.failUnlessRaises(mw_greylist.GLHeaderException, 
+		self.failUnlessRaises(GLHeaderException, 
 							  self.glc._split_headers, 
 							  'foo')
 
@@ -41,15 +48,14 @@ class mw_greylistTest(unittest.TestCase):
 						 self.glc._split_headers('\n'))
 
 	def testHeaderFromFileLineCount(self):
-		filename = 'test/header_file.txt'
-		fh = open(filename)
+		fh = open(self.header_file)
 		lines = fh.readlines()
-		self.glc.read_headers(filename)
+		self.glc.read_headers(self.header_file)
 		self.assertEqual(len(lines),
 						 len(self.glc.headers))
 
 	def testHeaderAddedCorrectly(self):
-		self.glc.read_headers('test/header_file.txt')
+		self.glc.read_headers(self.header_file)
 		self.assertEqual(self.glc.headers['client_address'], '1.2.3.4')
 
 	def testRBLCheckWithoutClient(self):
@@ -78,11 +84,11 @@ class mw_greylistTest(unittest.TestCase):
 						 self.glc.test_spf())
 
 	def testHandleEmptyConnStr(self):
-		self.glc = mw_greylist.GLCandidate(conf_file="")
+		self.glc = GLCandidate(conf_file="")
 		self.assertEqual("", self.glc._conn_str())
 
 	def testConnStrCreatedCorrectly(self):
-		self.glc = mw_greylist.GLCandidate(conf_file="")
+		self.glc = GLCandidate(conf_file="")
 		self.glc.db_params['dbname'] = 'greylist'
 		self.glc.db_params['dbuser'] = 'postfix'
 		self.assertEqual("dbname='greylist' dbuser='postfix' ",

@@ -1,3 +1,4 @@
+from mw_greylist.plugins import *
 from mw_greylist.exceptions import *
 import psycopg2
 import rbl
@@ -97,6 +98,13 @@ class GLCandidate(object):
 			else:
 				break
 
+	def do_tests(self):
+		score = 0
+		for plugin in self.plugins:
+			p = plugin(self.headers)
+			print p.do_test()
+		print "Total score: %d" % score
+
 	def _test_rbl_server(self, server_name):
 		if 'client_address' in self.headers:
 			res = rbl.check_rbl_like(self.headers['client_address'],
@@ -125,33 +133,6 @@ class GLCandidate(object):
 				score = score + 1
 		return score
 
-	def test_spf(self):
-		if 'client_address' and 'helo_name' and 'sender' in self.headers:
-			results = spf.check(i=self.headers['client_address'], 
-								h=self.headers['helo_name'], 
-								s=self.headers['sender'], 
-								receiver=socket.gethostname())
-			self.spf_result['action'] = results[0]
-			self.spf_result['code'] = results[1]
-			self.spf_result['message'] = results[2]
-			self._write_to_syslog("SPF check returns action='%s', code='%s', message='%s'" % (results[0], results[1], results[2]))
-			return results
-		else:
-			self._write_to_syslog(LOG_WARN, "Client address, helo name or sender missing from headers.")
-			raise GLImcompleteHeaderException, "Incomplete headers."
-
-	def spf_score(self):
-		action = self.spf_result['action']
-		if action == 'pass':
-			return 0
-		if action == 'none':
-			return 1
-		if action == 'softfail':
-			return 2
-		if action == 'fail':
-			return 3
-		raise GLEndOfFunctionException, "End of non-void function reached."
-	
 	def _conn_str(self):
 		conn_str = ""
 		parameters = self.db_params.keys()

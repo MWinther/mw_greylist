@@ -8,7 +8,7 @@ class PluginMount(type):
 class ActionProvider:
 	__metaclass__ = PluginMount
 
-from mw_greylist.plugins import *
+#from mw_greylist.plugins import *
 
 #for action in ActionProvider.plugins:
 #	action.perform('foo')

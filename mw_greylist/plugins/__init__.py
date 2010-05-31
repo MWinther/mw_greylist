@@ -1,1 +1,1 @@
-__all__ = ['insert']
+__all__ = ['spf_plugin']

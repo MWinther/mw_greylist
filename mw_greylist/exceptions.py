@@ -17,3 +17,7 @@ class GLNoDBConnectionException(GLException):
 class GLIncompleteHeaderException(GLException):
 	"Used to indicate incomplete information in headers."
 	pass
+
+class GLPluginException(GLException):
+	"Used to indicate something went wrong with one of the plugin checks."
+	pass

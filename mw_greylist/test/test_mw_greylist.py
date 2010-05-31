@@ -73,16 +73,6 @@ class mw_greylistTest(unittest.TestCase):
 		self.glc._test_rbl_server('zen.spamhaus.org')
 		self.assert_('zen.spamhaus.org' in self.glc.rbl_results)
 
-	def testSPFCheckWithoutClient(self):
-		self.failUnlessRaises(Exception, self.glc.test_spf)
-
-	def testSPFResponse(self):
-		self.glc.headers['client_address'] = '67.207.130.103'
-		self.glc.headers['helo_name'] = 'urd.winthernet.se'
-		self.glc.headers['sender'] = 'test@winthernet.se'
-		self.assertEqual(('pass', 250, 'sender SPF authorized'),
-						 self.glc.test_spf())
-
 	def testHandleEmptyConnStr(self):
 		self.glc = GLCandidate(conf_file="")
 		self.assertEqual("", self.glc._conn_str())

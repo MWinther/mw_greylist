@@ -2,6 +2,9 @@ class GLException(Exception):
 	"Used to indicate Greylist Candidate errors."
 	pass
 
+class GLInvalidConfigFileException(GLException):
+	"Used to indicate supplied config file is invalid (non-existant)"
+
 class GLEndOfFunctionException(GLException):
 	"Used to indicate end of function without catching circumstances."
 	pass

@@ -17,13 +17,13 @@ def check_rbl_like (hostname,
         check_addr = socket.gethostbyname(check_name)
     except socket.error:
         check_addr = None
-	log_message = "RBL %s returns %s for %s" % (root_name, check_addr, hostname)
-	if do_log:
-		if check_addr:
-			syslog(LOG_MAIL|LOG_INFO, log_message)
-		else:
-			syslog(LOG_MAIL|LOG_DEBUG, log_message) 
-		print "RBL returns %s" % check_addr
+    log_message = "RBL %s returns %s for %s" % (root_name, check_addr, hostname)
+    if do_log:
+        if check_addr:
+            syslog(LOG_MAIL|LOG_INFO, log_message)
+        else:
+            syslog(LOG_MAIL|LOG_DEBUG, log_message) 
+        print "RBL returns %s" % check_addr
     return check_addr
 
 def check_rbl(hostname):

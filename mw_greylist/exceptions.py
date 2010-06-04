@@ -1,26 +1,26 @@
 class GLException(Exception):
-	"Used to indicate Greylist Candidate errors."
-	pass
+    "Used to indicate Greylist Candidate errors."
+    pass
 
 class GLInvalidConfigFileException(GLException):
-	"Used to indicate supplied config file is invalid (non-existant)"
+    "Used to indicate supplied config file is invalid (non-existant)"
 
 class GLEndOfFunctionException(GLException):
-	"Used to indicate end of function without catching circumstances."
-	pass
+    "Used to indicate end of function without catching circumstances."
+    pass
 
 class GLHeaderException(GLException):
-	"Used to indicate incorrectly formatted header line."
-	pass
+    "Used to indicate incorrectly formatted header line."
+    pass
 
 class GLNoDBConnectionException(GLException):
-	"Used to indicate inability to communicate with database."
-	pass
+    "Used to indicate inability to communicate with database."
+    pass
 
 class GLIncompleteHeaderException(GLException):
-	"Used to indicate incomplete information in headers."
-	pass
+    "Used to indicate incomplete information in headers."
+    pass
 
 class GLPluginException(GLException):
-	"Used to indicate something went wrong with one of the plugin checks."
-	pass
+    "Used to indicate something went wrong with one of the plugin checks."
+    pass

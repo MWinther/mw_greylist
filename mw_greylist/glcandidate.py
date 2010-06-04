@@ -109,8 +109,23 @@ class GLCandidate(object):
                 self.db_entry.status = 'G'
             else:
                 self.db_entry.expiry_date =\
-                    self.settings.whitelist_interval(self.score)
+                    self.settings.whitelist_expiry(self.score)
                 self.db_entry.status = 'W'
+
+    def _update_db_entry(self, action):
+        status = self.db_entry.status
+        if status == 'W' and action == 'ALLOW':
+            self.db_entry.last_activated = self.settings.now
+            self.db_entry.count += 1
+        elif status == 'G' and action == 'ALLOW':
+            self.db_entry.status = 'W'
+            self.db_entry.expiry_date =\
+                    self.settings.whitelist_expiry(self.db_entry.score)
+            self.db_entry.last_activated = self.settings.now
+            self.db_entry.count = 1
+        elif status == 'G' and action == 'DENY':
+            self.db_entry.last_activated = self.settings.now
+            self.db_entry.count += 1
 
     def perform_action(self):
         action = self.get_action()
@@ -118,6 +133,8 @@ class GLCandidate(object):
             self._do_tests()
             self._handle_score()
             action = self.get_action()
+        else:
+            self._update_db_entry(action)
         if action == 'ALLOW':
             return 'DUNNO\n\n'
         elif action == 'DENY':

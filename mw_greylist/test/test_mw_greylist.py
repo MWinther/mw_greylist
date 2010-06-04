@@ -1,15 +1,14 @@
+from datetime import datetime, timedelta
+from mw_greylist.exceptions import *
 from mw_greylist.glcandidate import GLCandidate
 from mw_greylist.glentry import GLEntry
-from mw_greylist.settings import Settings
 from mw_greylist.pluginframework import ActionProvider
-from mw_greylist.exceptions import *
+from mw_greylist.settings import Settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os.path
 import sys
 import unittest
-from datetime import datetime, timedelta
-#import mw_greylist.core.exceptions
 
 class mw_greylistTest(unittest.TestCase):
 
@@ -79,6 +78,8 @@ class mw_greylistTest(unittest.TestCase):
         entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
         entry.status = 'G'
         entry.expiry_date = datetime.now() - timedelta(minutes=5)
+        entry.score = 1
+        entry.count = 1
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
@@ -89,6 +90,8 @@ class mw_greylistTest(unittest.TestCase):
         entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
         entry.status = 'G'
         entry.expiry_date = datetime.now() + timedelta(minutes=5)
+        entry.score = 1
+        entry.count = 1
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
@@ -99,11 +102,92 @@ class mw_greylistTest(unittest.TestCase):
         entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
         entry.status = 'W'
         entry.expiry_date = datetime.now() - timedelta(minutes=5)
+        entry.score = 1
+        entry.count = 1
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
         self.glc.perform_action()
         self.assertNotEqual(None, self.glc.score)
+
+    def testShouldAddTestEntryAsGreylisted(self):
+        self.glc.read_headers(self.header_file)
+        self.assertEqual(self.glc.settings.greylist_message,
+                         self.glc.perform_action())
+        query = self.session.query(GLEntry)
+        entry = query.first()
+        self.assertEqual('G', entry.status)
+        self.assertEqual(1, entry.count)
+
+    def testShouldAddTestEntryAsWhitelisted(self):
+        self.glc.read_headers(self.header_file)
+        self.glc.get_action()
+        self.glc.score = 0
+        self.glc._handle_score()
+        query = self.session.query(GLEntry)
+        entry = query.first()
+        self.assertEqual('W', entry.status)
+        self.assertEqual(1, entry.count)
+
+    def testShouldUpdateGreylistedTestEntryCount(self):
+        entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
+        entry.status = 'G'
+        last_activated = datetime.now() - timedelta(minutes=5)
+        entry.last_activated = last_activated
+        expiry_date = datetime.now() + timedelta(minutes=5)
+        entry.expiry_date = expiry_date
+        entry.score = 1
+        entry.count = 1
+        self.session.add(entry)
+        self.glc.read_headers(self.header_file)
+        self.assertEqual(self.glc.settings.greylist_message,
+                         self.glc.perform_action())
+        query = self.session.query(GLEntry)
+        entry = query.first()
+        self.assertEqual('G', entry.status)
+        self.assertEqual(2, entry.count)
+        self.failUnless(entry.last_activated > last_activated)
+        self.assertEqual(entry.expiry_date, expiry_date)
+
+    def testShouldUpdateWhitelistedTestEntryCount(self):
+        entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
+        entry.status = 'W'
+        last_activated = datetime.now() - timedelta(minutes=5)
+        entry.last_activated = last_activated
+        expiry_date = datetime.now() + timedelta(minutes=5)
+        entry.expiry_date = expiry_date
+        entry.score = 1
+        entry.count = 1
+        self.session.add(entry)
+        self.glc.read_headers(self.header_file)
+        self.assertEqual('DUNNO\n\n',
+                         self.glc.perform_action())
+        query = self.session.query(GLEntry)
+        entry = query.first()
+        self.assertEqual('W', entry.status)
+        self.assertEqual(2, entry.count)
+        self.failUnless(entry.last_activated > last_activated)
+        self.assertEqual(entry.expiry_date, expiry_date)
+
+    def testShouldChangeExpiredGreylistedTestEntryToWhitelisted(self):
+        entry = GLEntry(client='1.2.3.4', helo='some.domain.tld', sender='bar.tld')
+        entry.status = 'G'
+        last_activated = datetime.now() - timedelta(minutes=5)
+        entry.last_activated = last_activated
+        expiry_date = datetime.now() - timedelta(minutes=5)
+        entry.expiry_date = expiry_date
+        entry.score = 2
+        entry.count = 3
+        self.session.add(entry)
+        self.glc.read_headers(self.header_file)
+        self.assertEqual('DUNNO\n\n',
+                         self.glc.perform_action())
+        query = self.session.query(GLEntry)
+        entry = query.first()
+        self.assertEqual('W', entry.status)
+        self.assertEqual(1, entry.count)
+        self.failUnless(entry.last_activated > last_activated)
+        self.failUnless(entry.expiry_date > expiry_date)
 
 if __name__ == '__main__':
     Session = sessionmaker()

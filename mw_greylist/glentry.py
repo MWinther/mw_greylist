@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine, Column, String, DateTime, Integer
 from sqlalchemy.ext.declarative import declarative_base
+from datetime import datetime, timedelta
 
 Base = declarative_base()
 class GLEntry(Base):
@@ -23,3 +24,18 @@ class GLEntry(Base):
 		return "<GLEntry(client='%s', helo='%s', sender='%s')>" \
 			% (self.client, self.helo, self.sender)
 
+	def get_action(self):
+		if self.status == 'W':
+			if self.expiry_date < datetime.now():
+				return 'TEST'
+			else:
+				return 'ALLOW'
+		elif self.status == 'G':
+			if self.expiry_date < datetime.now() - timedelta(days=4):
+				return 'TEST'
+			if self.expiry_date < datetime.now():
+				return 'ALLOW'
+			else:
+				return 'DENY'
+		else:
+			return 'TEST'

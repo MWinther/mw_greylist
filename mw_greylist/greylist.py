@@ -11,7 +11,7 @@ engine = create_engine('sqlite:////tmp/alch_test.db', echo=True)
 #candidate = GLCandidate(connection, settings)
 #candidate.plugins = ActionProvider.plugins
 #candidate.read_headers('mw_greylist/test/header_file.txt')
-#candidate.select_action()
+#print candidate.perform_action()
 
 gl = GLCandidate()
 gl.plugins = ActionProvider.plugins

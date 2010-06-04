@@ -1,13 +1,12 @@
 import ConfigParser
 from os import getenv, path
 from mw_greylist.exceptions import *
+from datetime import datetime, timedelta
 
 class Settings(object):
 
 	def __init__(self, conf_file=None):
-		self.session_id_length = 6
-		self.greylist_message = '450 Temporarily inaccessible, try again later.\n\n'
-		self.connection_url = 'sqlite:///mw_greylist.db'
+		self.file_settings = ConfigParser.ConfigParser()
 		if conf_file != None:
 			if path.isfile(conf_file):
 				self.conf_file = conf_file
@@ -17,24 +16,21 @@ class Settings(object):
 				raise GLInvalidConfigFileException, "%s doesn't exist."
 		else:
 			self.conf_file = self.get_config_file()
-		if self.conf_file:
-			self.file_settings = ConfigParser.ConfigParser()
-			file_content = self.file_settings.read(conf_file)
-			if file_content:
-				if self.file_settings.has_option('general', 'session_id_length'):
-					self.session_id_length = \
-						  self.file_settings.getint('general',
-											 'session_id_length')
-				if self.file_settings.has_option('general', 'greylist_message'):
-					self.greylist_message = self.file_settings.get('general', 
-															'greylist_message')
-					self.greylist_message = "%s\n\n" % self.greylist_message
-				if self.file_settings.has_option('general', 'connection_url'):
-					self.connection_url = self.file_settings.get('general',
-																 'connection_url')
+		if conf_file:
+			self.file_settings.read(conf_file)
 		else:
-			# FIXME: Write message to syslog about using defaults.
+			#FIXME: Syslog this stuff.
 			pass
+		self.session_id_length = int(self.get_setting(6, 'session_id_length'))
+		default_message = '450 Temporarily inaccessible, try again later.'
+		self.greylist_message =\
+				self.get_setting(default_message, 'greylist_message')
+		self.greylist_message = "%s\n\n" % self.greylist_message
+		self.connection_url = self.get_setting('sqlite:///mw_greylist.db',
+											   'connection_url')
+		self.greylist_intervals = self.get_setting('2m', 'greylist_intervals')
+		self.whitelist_intervals = self.get_setting('1M', 'whitelist_intervals')
+		self.now = datetime.now()
 
 	def get_config_file(self):
 		filename = 'mw_greylist'
@@ -50,4 +46,43 @@ class Settings(object):
 			if path.isfile(location):
 				return location
 		return None
+
+	def get_setting(self, default, option, section='general'):
+		# If settings are available in the ConfigParser, return
+		# those. If not, return the default value.
+		if self.file_settings.has_option(section, option):
+			return self.file_settings.get(section, option)
+		else:
+			return default
+
+	def whitelist_expiry(self, score):
+		intervals = self.whitelist_intervals.split(',')
+		if score < len(intervals):
+			interval = intervals[score]
+		else:
+			interval = intervals[-1]
+		return self.now + self.mk_timedelta(interval)
+
+	def greylist_expiry(self, score):
+		intervals = self.greylist_intervals.split(',')
+		if score < len(intervals):
+			interval = intervals[score-1]
+		else:
+			interval = intervals[-1]
+		return self.now + self.mk_timedelta(interval)
+
+	def mk_timedelta(self, interval):
+		# Takes an interval string and returns a timedelta object.
+		unit = interval[-1]
+		if unit not in ['s', 'm', 'h', 'd', 'w', 'M', 'y']:
+			raise ValueError, "Incorrect interval '%s'" % interval
+		value = int(interval[0:-1])
+		if unit == 's': return timedelta(seconds=value)
+		if unit == 'm': return timedelta(minutes=value)
+		if unit == 'h': return timedelta(hours=value)
+		if unit == 'd': return timedelta(days=value)
+		if unit == 'w': return timedelta(weeks=value)
+		if unit == 'M': return timedelta(days=value*30)
+		if unit == 'y': return timedelta(days=value*365)
+			
 

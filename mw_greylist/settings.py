@@ -30,7 +30,10 @@ class Settings(object):
                                                'connection_url')
         self.greylist_intervals = self.get_setting('2m', 'greylist_intervals')
         self.whitelist_intervals = self.get_setting('1M', 'whitelist_intervals')
+        self.log_dest = self.get_setting('syslog', 'log_dest')
+        self.log_debug_messages = self.get_setting('no', 'log_debug_messages')
         self.now = datetime.now()
+        self.session_id = None
 
     def get_config_file(self):
         filename = 'mw_greylist'

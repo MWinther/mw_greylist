@@ -1,3 +1,4 @@
+from mw_greylist.pluginframework import ActionProvider
 from mw_greylist.plugins import *
 from mw_greylist.exceptions import *
 from mw_greylist.glentry import GLEntry
@@ -16,9 +17,7 @@ class GLCandidate(object):
         self.settings = settings
         self.session = session
         self.headers = dict()
-        self.syslog_facility = LOG_MAIL
-        openlog(sys.argv[0].split('/')[-1], 0, self.syslog_facility)
-        self.session_id = self._generate_id()
+        self.settings.session_id = self._generate_id()
         self.db_entry = None
         self.score = None
 
@@ -75,7 +74,7 @@ class GLCandidate(object):
         if not str:
             str = level
             level = LOG_DEBUG
-        syslog(level, "%s: %s" % (self.session_id, str))
+        syslog(level, "%s: %s" % (self.settings.session_id, str))
 
     def get_action(self):
         if not self.db_entry:

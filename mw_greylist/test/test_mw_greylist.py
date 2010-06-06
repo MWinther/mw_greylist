@@ -95,7 +95,8 @@ class mw_greylistTest(unittest.TestCase):
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
-        self.assertEqual(self.glc.settings.greylist_message, self.glc.perform_action())
+        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message, 
+                         self.glc.perform_action())
         self.assertEqual(None, self.glc.score)
 
     def testPerformActionShouldWriteScoreForInactiveWL(self):
@@ -112,7 +113,7 @@ class mw_greylistTest(unittest.TestCase):
 
     def testShouldAddTestEntryAsGreylisted(self):
         self.glc.read_headers(self.header_file)
-        self.assertEqual(self.glc.settings.greylist_message,
+        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message,
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()
@@ -140,7 +141,7 @@ class mw_greylistTest(unittest.TestCase):
         entry.count = 1
         self.session.add(entry)
         self.glc.read_headers(self.header_file)
-        self.assertEqual(self.glc.settings.greylist_message,
+        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message,
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()

@@ -3,27 +3,22 @@ import sys
 
 class Log(object):
 
-    def __init__(self, settings):
-        self.destination = settings.log_dest
-        self.session_id = settings.session_id
+    def __init__(self):
         self.facility = LOG_MAIL
-        if self.destination != 'syslog':
-            self.filehandle = None
-        if settings.log_debug_messages == 'yes':
-            self.log_debug_messages = True
-        else:
-            self.log_debug_messages = False
+        self.log_debug_messages = True
+        self.session_id = None
             
     def open(self):
-        if self.destination == 'syslog':
-            openlog(sys.argv[0].split('/')[-1], 0, self.facility)
+        #openlog(sys.argv[0].split('/')[-1], 0, self.facility)
+        openlog('new_greylist', 0, self.facility)
         if self.log_debug_messages == False:
             setlogmask(LOG_UPTO(LOG_INFO))
 
     def write(self, message, level=LOG_INFO):
-        if self.destination == 'syslog':
+        if self.session_id:
             syslog(level, "%s: %s" % (self.session_id, message))
+        else:
+            syslog(level, message)
 
     def close(self):
-        if self.destination == 'syslog':
-            closelog()
+        closelog()

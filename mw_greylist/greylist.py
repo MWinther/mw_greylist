@@ -1,7 +1,6 @@
 from mw_greylist.settings import Settings
 from mw_greylist.glcandidate import GLCandidate
 from mw_greylist.glentry import GLEntry
-#from mw_greylist.pluginframework import ActionProvider
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sys import stdout
@@ -11,8 +10,7 @@ engine = create_engine(settings.connection_url)
 Session = sessionmaker(bind=engine)
 session = Session()
 candidate = GLCandidate(settings, session)
-#candidate.plugins = ActionProvider.plugins
-candidate.read_headers('mw_greylist/test/header_file.txt')
+candidate.read_headers()
 print candidate.perform_action()
 session.commit()
 

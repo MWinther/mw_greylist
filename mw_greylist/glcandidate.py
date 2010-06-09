@@ -60,12 +60,14 @@ class GLCandidate(object):
         while True:
             line = file.readline()
             line = line.strip()
+            log.write("Read line '%s'" % line, LOG_DEBUG)
             if line:
                 name, value = self._split_headers(line)
                 self.headers[name] = value
                 if name == 'sender':
                     self.headers['sender_domain'] = value.split('@')[-1]
             else:
+                log.write("Done reading headers.", LOG_DEBUG)
                 break
 
     def _do_tests(self):

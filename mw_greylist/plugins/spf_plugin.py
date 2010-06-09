@@ -7,8 +7,9 @@ import spf
 
 class SPF(ActionProvider):
 
-    def __init__(self, headers={}):
+    def __init__(self, headers={}, settings=None):
         self.headers = headers
+        self.settings = settings
         self.result = {'action': None}
         self.msg_prio = None
         self.message = ""

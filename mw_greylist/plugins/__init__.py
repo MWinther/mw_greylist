@@ -1,1 +1,1 @@
-__all__ = ['spf_plugin']
+__all__ = ['spf_plugin', 'rbl_plugin']

@@ -71,10 +71,12 @@ class GLCandidate(object):
     def _do_tests(self):
         score = 0
         for plugin in self.plugins:
-            p = plugin(self.headers)
+            p = plugin(self.headers, self.settings)
             log.write("Using plugin '%s'" % p, LOG_DEBUG)
             p.do_test()
-            score += p.get_score()
+            test_score = p.get_score()
+            if test_score:
+                score += test_score
         log.write("Settings GLCandidate score to %d" % score, LOG_DEBUG)
         self.score = score
 

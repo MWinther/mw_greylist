@@ -60,7 +60,6 @@ class GLCandidate(object):
         while True:
             line = file.readline()
             line = line.strip()
-            log.write("Read line '%s'" % line, LOG_DEBUG)
             if line:
                 name, value = self._split_headers(line)
                 self.headers[name] = value
@@ -180,7 +179,7 @@ class GLCandidate(object):
         else:
             response = 'DUNNO'
             log.write("Got action '%s', returning '%s'" % (action, response), LOG_DEBUG)
-        return "%s\n\n" % response
+        return "action=%s\n\n" % response
 
 log = Log()
 

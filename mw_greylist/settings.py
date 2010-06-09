@@ -25,7 +25,7 @@ class Settings(object):
             self.conf_file = self.get_config_file()
         if self.conf_file:
             log.write("Found config file %s." % self.conf_file, LOG_DEBUG)
-            self.file_settings.read(conf_file)
+            self.file_settings.read(self.conf_file)
         else:
             log.write("No config file found. Using defaults.", LOG_DEBUG)
         self.session_id_length = int(self.get_setting(6, 'session_id_length'))

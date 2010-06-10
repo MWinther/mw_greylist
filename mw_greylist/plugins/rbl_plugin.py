@@ -60,6 +60,7 @@ class RBL(ActionProvider):
         for server in self.results.keys():
             if self.results[server]:
                 score = score + 1
+        log.write("RBL score: %d" % score, LOG_DEBUG)
         return score
 
 log = Log()

@@ -83,7 +83,7 @@ class mw_greylistTest(unittest.TestCase):
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
-        self.assertEqual('DUNNO\n\n', self.glc.perform_action())
+        self.assertEqual('action=DUNNO\n\n', self.glc.perform_action())
         self.assertEqual(None, self.glc.score)
 
     def testPerformActionShouldReturn450ForActiveGL(self):
@@ -95,7 +95,7 @@ class mw_greylistTest(unittest.TestCase):
         self.session.add(entry)
         self.session.commit()
         self.glc.read_headers(self.header_file)
-        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message, 
+        self.assertEqual("action=%s\n\n" % self.glc.settings.greylist_message, 
                          self.glc.perform_action())
         self.assertEqual(None, self.glc.score)
 
@@ -113,7 +113,7 @@ class mw_greylistTest(unittest.TestCase):
 
     def testShouldAddTestEntryAsGreylisted(self):
         self.glc.read_headers(self.header_file)
-        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message,
+        self.assertEqual("action=%s\n\n" % self.glc.settings.greylist_message,
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()
@@ -141,7 +141,7 @@ class mw_greylistTest(unittest.TestCase):
         entry.count = 1
         self.session.add(entry)
         self.glc.read_headers(self.header_file)
-        self.assertEqual("%s\n\n" % self.glc.settings.greylist_message,
+        self.assertEqual("action=%s\n\n" % self.glc.settings.greylist_message,
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()
@@ -161,7 +161,7 @@ class mw_greylistTest(unittest.TestCase):
         entry.count = 1
         self.session.add(entry)
         self.glc.read_headers(self.header_file)
-        self.assertEqual('DUNNO\n\n',
+        self.assertEqual('action=DUNNO\n\n',
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()
@@ -181,7 +181,7 @@ class mw_greylistTest(unittest.TestCase):
         entry.count = 3
         self.session.add(entry)
         self.glc.read_headers(self.header_file)
-        self.assertEqual('DUNNO\n\n',
+        self.assertEqual('action=DUNNO\n\n',
                          self.glc.perform_action())
         query = self.session.query(GLEntry)
         entry = query.first()

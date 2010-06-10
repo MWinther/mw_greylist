@@ -18,17 +18,24 @@ class GLCandidate(object):
         self.settings = settings
         self.session = session
         self.headers = dict()
-        #self.settings.session_id = self._generate_id()
-        log.session_id = self._generate_id()
         self.db_entry = None
         self.score = None
+        self.oldstatus = None
         self.plugins = ActionProvider.plugins
 
-    def _generate_id(self):
-        id = ''.join(Random().sample(string.hexdigits.upper(), 
-                                     self.settings.session_id_length))
-        log.write("Created session id %s" % id, LOG_DEBUG)
-        return id
+    def __repr__(self):
+        if 'client_name' in self.headers:
+            client_name = self.headers['client_name']
+        else:
+            client_name = 'unknown'
+        if 'client_address' and 'helo_name' and 'sender_domain' in self.headers:
+            return 'client=%s[%s] helo=<%s> sender_domain=%s'\
+                      % (client_name,
+                         self.headers['client_address'],
+                         self.headers['helo_name'],
+                         self.headers['sender_domain'])
+        else:
+            return '<GLCandidate; incomplete headers>'
 
     def _split_headers(self, line=""):
         line = line.strip()
@@ -65,6 +72,8 @@ class GLCandidate(object):
                 self.headers[name] = value
                 if name == 'sender':
                     self.headers['sender_domain'] = value.split('@')[-1]
+                if name == 'queue_id':
+                    log.session_id = value
             else:
                 log.write("Done reading headers.", LOG_DEBUG)
                 break
@@ -97,16 +106,19 @@ class GLCandidate(object):
                      GLEntry.helo == helo,
                      GLEntry.sender == sender)
         )
+        entry = None
         if(query.count() == 1):
             log.write("Entry client='%s', helo='%s', sender='%s' found in database."\
                         % (client, helo, sender), LOG_DEBUG)
-            return query.first()
+            entry = query.first()
+            self.oldstatus = entry.status
         else:
             log.write("Created new entry client='%s', helo='%s', sender='%s'.",
                       LOG_DEBUG)
             entry = GLEntry(client=client, helo=helo, sender=sender)
             self.session.add(entry)
-            return entry
+            self.oldstatus = '-'
+        return entry
 
     def _handle_score(self):
         if self.score != None:
@@ -121,19 +133,10 @@ class GLCandidate(object):
                 self.db_entry.status = 'G'
                 self.db_entry.expiry_date =\
                     self.settings.greylist_expiry(self.score)
-                log.write("Entry client='%s', helo='%s', sender='%s' is greylisted."\
-                            % (self.db_entry.client, 
-                               self.db_entry.helo,
-                               self.db_entry.sender)
-                         )
             else:
                 self.db_entry.status = 'W'
                 self.db_entry.expiry_date =\
                     self.settings.whitelist_expiry(self.score)
-                log.write("Entry client='%s', helo='%s', sender='%s' is whitelisted."\
-                            % (self.db_entry.client, 
-                               self.db_entry.helo,
-                               self.db_entry.sender))
             log.write("Entry will expire on=%s" % self.db_entry.expiry_date,
                       LOG_DEBUG)
 
@@ -141,11 +144,11 @@ class GLCandidate(object):
     def _update_db_entry(self, action):
         status = self.db_entry.status
         if status == 'W' and action == 'ALLOW':
-            log.write("Entry already whitelisted.")
+            self.oldstatus = 'W'
             self.db_entry.last_activated = self.settings.now
             self.db_entry.count += 1
         elif status == 'G' and action == 'ALLOW':
-            log.write("Entry greylisting has expired. Adding to whitelist.")
+            self.oldstatus = 'G'
             self.db_entry.status = 'W'
             self.db_entry.expiry_date =\
                     self.settings.whitelist_expiry(self.db_entry.score)
@@ -153,7 +156,7 @@ class GLCandidate(object):
             self.db_entry.last_activated = self.settings.now
             self.db_entry.count = 1
         elif status == 'G' and action == 'DENY':
-            log.write("Entry already greylisted.")
+            self.oldstatus = 'G'
             self.db_entry.last_activated = self.settings.now
             self.db_entry.count += 1
 
@@ -172,13 +175,19 @@ class GLCandidate(object):
             self._update_db_entry(action)
         if action == 'ALLOW':
             response = 'DUNNO'
-            log.write("Got action '%s', returning '%s'" % (action, response), LOG_DEBUG)
         elif action == 'DENY':
             response = self.settings.greylist_message
-            log.write("Got action '%s', returning '%s'" % (action, response), LOG_DEBUG)
+            log.write('reject: %s; %s' % (response, self))
         else:
             response = 'DUNNO'
-            log.write("Got action '%s', returning '%s'" % (action, response), LOG_DEBUG)
+        log.write("Got action '%s', returning '%s'" % (action, response), LOG_DEBUG)
+        log.write("%s, status=%s/%s score=%d count=%d expiry=%s"\
+                  % (self,
+                     self.oldstatus,
+                     self.db_entry.status,
+                     self.db_entry.score,
+                     self.db_entry.count,
+                     self.db_entry.expiry_date))
         return "action=%s\n\n" % response
 
 log = Log()

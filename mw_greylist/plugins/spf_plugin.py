@@ -27,7 +27,7 @@ class SPF(ActionProvider):
             self.result['code'] = results[1]
             self.result['message'] = results[2]
             log.write("SPF check returns action='%s', code='%s', message='%s'"\
-                        % (results[0], results[1], results[2]))
+                        % (results[0], results[1], results[2]), LOG_DEBUG)
             return results
         else:
             log.write("Client address, helo name or sender missing from headers.",
@@ -49,7 +49,10 @@ class SPF(ActionProvider):
             score = 3
         else:
             raise GLPluginException, "Unexpected SPF result: got '%s'" % action
-        log.write("SPF score: %d" % score, LOG_DEBUG)
+        if score == None:
+            log.write("SPF score: None", LOG_DEBUG)
+        else:
+            log.write("SPF score: %d" % score, LOG_DEBUG)
         return score
 
 log = Log()

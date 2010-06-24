@@ -43,6 +43,8 @@ class SPF(ActionProvider):
             score = 0
         elif action == 'none':
             score = 1
+        elif action == 'neutral':
+            score = 1
         elif action == 'softfail':
             score = 2
         elif action == 'fail':

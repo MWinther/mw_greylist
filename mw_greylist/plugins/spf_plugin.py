@@ -47,6 +47,8 @@ class SPF(ActionProvider):
             score = 2
         elif action == 'fail':
             score = 3
+        elif action == 'temperror':
+            score = 1
         else:
             raise GLPluginException, "Unexpected SPF result: got '%s'" % action
         if score == None:

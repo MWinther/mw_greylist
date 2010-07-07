@@ -10,7 +10,7 @@ class Log(object):
             
     def open(self):
         #openlog(sys.argv[0].split('/')[-1], 0, self.facility)
-        openlog('new_greylist', 0, self.facility)
+        openlog('mw_greylist', 0, self.facility)
         if self.log_debug_messages == False:
             setlogmask(LOG_UPTO(LOG_INFO))
 

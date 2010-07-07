@@ -32,7 +32,7 @@ class SPF(ActionProvider):
         else:
             log.write("Client address, helo name or sender missing from headers.",
                       LOG_WARNING)
-            raise GLIncompleteHeaderException, "Incomplete headers."
+            raise GLPluginException, "Incomplete headers."
 
     def get_score(self):
         action = self.result['action']

@@ -190,6 +190,13 @@ class mw_greylistTest(unittest.TestCase):
         self.failUnless(entry.last_activated > last_activated)
         self.failUnless(entry.expiry_date > expiry_date)
 
+    def testShouldHandlePluginExceptionsGracefully(self):
+        self.glc.headers = []
+        try:
+            self.glc._do_tests()
+        except:
+            self.fail()
+
 if __name__ == '__main__':
     Session = sessionmaker()
     unittest.main()

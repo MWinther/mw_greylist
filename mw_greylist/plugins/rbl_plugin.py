@@ -50,7 +50,7 @@ class RBL(ActionProvider):
             return res
         else:
             log.write("No client address in headers.", LOG_WARNING)
-            raise GLIncompleteHeaderException, "No client address in headers."
+            raise GLPluginException, "No client address in headers."
             return None
 
     def get_score(self):

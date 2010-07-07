@@ -83,8 +83,13 @@ class GLCandidate(object):
         for plugin in self.plugins:
             p = plugin(self.headers, self.settings)
             log.write("Using plugin '%s'" % p, LOG_DEBUG)
-            p.do_test()
-            test_score = p.get_score()
+            try:
+                p.do_test()
+                test_score = p.get_score()
+            except GLPluginException, e:
+                log.write("Plugin '%s' raised exception '%s'" % (p, e),
+                          LOG_ERR)
+                test_score = 0
             if test_score:
                 score += test_score
         log.write("Settings GLCandidate score to %d" % score, LOG_DEBUG)

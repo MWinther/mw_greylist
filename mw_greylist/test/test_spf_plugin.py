@@ -13,7 +13,7 @@ class SPFTest(unittest.TestCase):
 
     def testSPFCheckWithEmptyHeaders(self):
         spf = SPF()
-        self.failUnlessRaises(GLIncompleteHeaderException, spf.do_test)
+        self.failUnlessRaises(GLPluginException, spf.do_test)
 
     def testSPFScoreBeforeDoingTest(self):
         spf = SPF()

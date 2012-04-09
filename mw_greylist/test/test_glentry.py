@@ -1,7 +1,7 @@
 from mw_greylist.glentry import GLEntry
 from mw_greylist.exceptions import *
 from sqlalchemy import create_engine
-from sqlalchemy.exceptions import *
+from sqlalchemy.exc import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta

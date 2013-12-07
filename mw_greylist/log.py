@@ -1,17 +1,17 @@
 from syslog import *
-import sys
+
 
 class Log(object):
 
     def __init__(self):
         self.facility = LOG_MAIL
-        self.log_debug_messages = True
+        self.log_debug_messages = False
         self.session_id = None
-            
+
     def open(self):
         #openlog(sys.argv[0].split('/')[-1], 0, self.facility)
         openlog('mw_greylist', 0, self.facility)
-        if self.log_debug_messages == False:
+        if not self.log_debug_messages:
             setlogmask(LOG_UPTO(LOG_INFO))
 
     def write(self, message, level=LOG_INFO):
